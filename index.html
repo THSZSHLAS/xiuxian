@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>修仙智力大阵：渡劫飞升 v2.0</title>
+    <title>修仙智力大阵：渡劫飞升 V3.0</title>
     <style>
         :root {
             --primary-color: #00e5ff;
@@ -159,26 +159,26 @@
     <div id="lightning-overlay"></div>
 
     <div id="start-screen" class="container">
-        <h1>🗡️ 渡劫飞升 V2.0</h1>
+        <h1>🗡️ 渡劫飞升 V3.0</h1>
         <p>
-            乃是九天雷劫阵。<br>
-            本次雷劫由 <b>10道</b> 天雷组成，威力逐级递增：<br>
-            <span style="font-size:0.9em; color:#888;">
-            1道小学 (筑基) <br>
-            2道初中 (金丹) <br>
-            3道高中 (元婴) <br>
-            3道研究生 (化神) <br>
-            1道博士 (合道)
+            天道无情，九天雷劫已至。<br>
+            本次雷劫共 <b>15道</b>，涵盖万界知识：<br>
+            <span style="font-size:0.9em; color:#888; display:block; margin-top:10px; text-align:left; padding-left:20px;">
+            • 1道 筑基 (小学常识) <br>
+            • 2道 金丹 (初中基础) <br>
+            • 4道 元婴 (高中进阶) <br>
+            • 5道 化神 (研究生逻辑) <br>
+            • 3道 合道 (博士终极悖论)
             </span>
-            <br><br>
-            <span style="color: var(--danger-color)">⚠️ 你的道心（血条）仅能承受 3 次冲击！</span>
+            <br>
+            <span style="color: var(--danger-color); font-weight:bold;">⚠️ 道心(血条)破碎 3 次即刻陨落！</span>
         </p>
         <button class="btn start-btn" onclick="startGame()">吾欲逆天改命 (开始)</button>
     </div>
 
     <div id="game-screen" class="container hidden">
         <div style="display:flex; justify-content:space-between; font-size:0.9em; color:#888;">
-            <span id="question-progress">第 1/10 劫</span>
+            <span id="question-progress">第 1/15 劫</span>
             <span style="color: var(--gold)">修为: <span id="score">0</span> 年</span>
         </div>
         
@@ -208,7 +208,7 @@
         <h1 style="color:red">⚡ 陨 落 ⚡</h1>
         <div class="result-rank" style="color:gray">身死道消</div>
         <p>很遗憾，你在第 <span id="death-level"></span> 重雷劫化为了灰烬。</p>
-        <p>来世多读点书吧...</p>
+        <p>下辈子多读点书吧...</p>
         <button class="btn" style="border-color:red; color:red; margin-top:20px;" onclick="location.reload()">重新投胎</button>
     </div>
 
@@ -222,13 +222,13 @@
         let hp = 3;
         const maxHp = 3;
         
-        // 难度配置：各类题目数量
+        // 难度配置：调整为 15 题配置
         const CONFIG = {
             elem: 1,
             middle: 2,
-            high: 3,
-            master: 3,
-            phd: 1
+            high: 4,
+            master: 5,
+            phd: 3
         };
 
         // 洗牌算法
@@ -241,7 +241,7 @@
             return arr;
         }
 
-        // 核心：生成本次游戏的题目列表 (1+2+3+3+1)
+        // 核心：生成本次游戏的题目列表
         function generateGameLevel() {
             if (typeof questionDatabase === 'undefined') {
                 alert("题目数据加载失败！请确保 questions.js 文件存在。");
@@ -257,7 +257,7 @@
                 phd: questionDatabase.filter(q => q.tag === 'phd')
             };
 
-            // 抽取题目
+            // 抽取题目 (如果题库不够，会把所有该类别的题目都拿出来)
             let selected = [];
             selected = selected.concat(shuffle(pools.elem).slice(0, CONFIG.elem));
             selected = selected.concat(shuffle(pools.middle).slice(0, CONFIG.middle));
@@ -270,7 +270,10 @@
 
         function startGame() {
             gameQuestions = generateGameLevel();
-            if (gameQuestions.length === 0) return;
+            if (gameQuestions.length === 0) {
+                alert("题库数量不足以生成关卡，请检查 questions.js");
+                return;
+            }
 
             score = 0;
             hp = maxHp;
@@ -322,7 +325,7 @@
                     optsContainer.appendChild(btn);
                 });
 
-                document.getElementById('question-progress').innerText = `第 ${currentIndex + 1}/10 劫`;
+                document.getElementById('question-progress').innerText = `第 ${currentIndex + 1}/15 劫`;
                 qArea.style.opacity = 1;
             }, 200);
         }
@@ -354,7 +357,7 @@
         }
 
         function updateStats() {
-            document.getElementById('score').innerText = score * 100; // 假装是修为年限
+            document.getElementById('score').innerText = score * 100; 
             document.getElementById('hp-text').innerText = hp;
             const hpBar = document.getElementById('health-bar');
             hpBar.style.width = (hp / maxHp * 100) + '%';
@@ -390,7 +393,8 @@
             const rankEl = document.getElementById('final-rank');
             const commentEl = document.getElementById('final-comment');
             
-            // 评分逻辑
+            // 评分逻辑 (总分15分)
+           // 评分逻辑
             let rank = "";
             let comment = "";
             
