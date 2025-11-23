@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>修仙智力大阵：渡劫飞升 v2.0</title>
+    <style>
+        :root {
+            --primary-color: #00e5ff;
+            --danger-color: #ff3333;
+            --bg-color: #0a0a12;
+            --card-bg: #1a1a24;
+            --text-color: #e0e0e0;
+            --gold: #ffd700;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 50% 50%, #1b1b2f 0%, #000000 100%);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .level-tag {
+            display: inline-block;
+            background: #333;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+            color: var(--gold);
+            margin-bottom: 10px;
+            border: 1px solid var(--gold);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 12px 0;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            position: relative;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            background: rgba(0, 229, 255, 0.2);
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #00c6ff, #0072ff);
+            color: white;
+            border: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-top: 30px;
+        }
+
+        /* 血条样式 */
+        .health-wrapper {
+            position: relative;
+            margin: 20px 0;
+        }
+        .health-container {
+            width: 100%;
+            background: #333;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px #000;
+        }
+        .health-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #ff3333, #ff9933);
+            width: 100%;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hp-value {
+            position: absolute;
+            top: -22px;
+            right: 0;
+            color: var(--danger-color);
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .hidden { display: none; }
+
+        /* 特效层 */
+        #lightning-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 999;
+        }
+
+        .shake { animation: shake 0.4s; }
+        .flash { animation: flash 0.3s 2; }
+
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(-5px, 0); }
+            50% { transform: translate(5px, 0); }
+            75% { transform: translate(-5px, 0); }
+            100% { transform: translate(0, 0); }
+        }
+        @keyframes flash {
+            0% { opacity: 0; }
+            50% { opacity: 0.9; }
+            100% { opacity: 0; }
+        }
+
+        .result-rank {
+            font-size: 2.5em;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold);
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="lightning-overlay"></div>
+
+    <div id="start-screen" class="container">
+        <h1>🗡️ 渡劫飞升 V2.0</h1>
+        <p>
+            乃是九天雷劫阵。<br>
+            本次雷劫由 <b>10道</b> 天雷组成，威力逐级递增：<br>
+            <span style="font-size:0.9em; color:#888;">
+            1道小学 (筑基) <br>
+            2道初中 (金丹) <br>
+            3道高中 (元婴) <br>
+            3道研究生 (化神) <br>
+            1道博士 (合道)
+            </span>
+            <br><br>
+            <span style="color: var(--danger-color)">⚠️ 你的道心（血条）仅能承受 7 次冲击！</span>
+        </p>
+        <button class="btn start-btn" onclick="startGame()">吾欲逆天改命 (开始)</button>
+    </div>
+
+    <div id="game-screen" class="container hidden">
+        <div style="display:flex; justify-content:space-between; font-size:0.9em; color:#888;">
+            <span id="question-progress">第 1/10 劫</span>
+            <span style="color: var(--gold)">修为: <span id="score">0</span> 年</span>
+        </div>
+        
+        <div class="health-wrapper">
+            <div class="hp-value">道心: <span id="hp-text">7</span>/7</div>
+            <div class="health-container">
+                <div id="health-bar" class="health-bar"></div>
+            </div>
+        </div>
+
+        <div id="question-area">
+            <div id="level-badge" class="level-tag">筑基期雷劫</div>
+            <h2 id="question-text" style="margin-top:0">题目加载中...</h2>
+            <div id="options-container"></div>
+        </div>
+    </div>
+
+    <div id="success-screen" class="container hidden">
+        <h1>🌩️ 渡劫成功！</h1>
+        <p>天门大开，仙乐阵阵...</p>
+        <div class="result-rank" id="final-rank"></div>
+        <p id="final-comment"></p>
+        <button class="btn start-btn" onclick="location.reload()">转世重修 (再来一次)</button>
+    </div>
+
+    <div id="fail-screen" class="container hidden">
+        <h1 style="color:red">⚡ 陨 落 ⚡</h1>
+        <div class="result-rank" style="color:gray">身死道消</div>
+        <p>很遗憾，你在第 <span id="death-level"></span> 重雷劫化为了灰烬。</p>
+        <p>来世多读点书吧...</p>
+        <button class="btn" style="border-color:red; color:red; margin-top:20px;" onclick="location.reload()">重新投胎</button>
+    </div>
+
+    <script src="questions.js"></script>
+
+    <script>
+        // 游戏配置
+        let gameQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let hp = 7;
+        const maxHp = 7;
+        
+        // 难度配置：各类题目数量
+        const CONFIG = {
+            elem: 1,
+            middle: 2,
+            high: 3,
+            master: 3,
+            phd: 1
+        };
+
+        // 洗牌算法
+        function shuffle(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // 核心：生成本次游戏的题目列表 (1+2+3+3+1)
+        function generateGameLevel() {
+            if (typeof questionDatabase === 'undefined') {
+                alert("题目数据加载失败！请确保 questions.js 文件存在。");
+                return [];
+            }
+
+            // 按标签分类
+            const pools = {
+                elem: questionDatabase.filter(q => q.tag === 'elem'),
+                middle: questionDatabase.filter(q => q.tag === 'middle'),
+                high: questionDatabase.filter(q => q.tag === 'high'),
+                master: questionDatabase.filter(q => q.tag === 'master'),
+                phd: questionDatabase.filter(q => q.tag === 'phd')
+            };
+
+            // 抽取题目
+            let selected = [];
+            selected = selected.concat(shuffle(pools.elem).slice(0, CONFIG.elem));
+            selected = selected.concat(shuffle(pools.middle).slice(0, CONFIG.middle));
+            selected = selected.concat(shuffle(pools.high).slice(0, CONFIG.high));
+            selected = selected.concat(shuffle(pools.master).slice(0, CONFIG.master));
+            selected = selected.concat(shuffle(pools.phd).slice(0, CONFIG.phd));
+
+            return selected;
+        }
+
+        function startGame() {
+            gameQuestions = generateGameLevel();
+            if (gameQuestions.length === 0) return;
+
+            score = 0;
+            hp = maxHp;
+            currentIndex = 0;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            updateStats();
+            showQuestion();
+        }
+
+        function getLevelName(tag) {
+            const map = {
+                'elem': '筑基期 (小学)',
+                'middle': '金丹期 (初中)',
+                'high': '元婴期 (高中)',
+                'master': '化神期 (研究生)',
+                'phd': '合道期 (博士)'
+            };
+            return map[tag] || '未知雷劫';
+        }
+
+        function showQuestion() {
+            const qData = gameQuestions[currentIndex];
+            
+            // 动画过渡
+            const qArea = document.getElementById('question-area');
+            qArea.style.opacity = 0;
+            
+            setTimeout(() => {
+                document.getElementById('level-badge').innerText = getLevelName(qData.tag);
+                document.getElementById('question-text').innerText = qData.q;
+                const optsContainer = document.getElementById('options-container');
+                optsContainer.innerHTML = '';
+
+                // 处理选项
+                let answers = qData.a.map((text, index) => ({
+                    text: text,
+                    isCorrect: index === qData.correct
+                }));
+                answers = shuffle(answers);
+
+                answers.forEach(ans => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.innerText = ans.text;
+                    btn.onclick = () => handleAnswer(ans.isCorrect);
+                    optsContainer.appendChild(btn);
+                });
+
+                document.getElementById('question-progress').innerText = `第 ${currentIndex + 1}/10 劫`;
+                qArea.style.opacity = 1;
+            }, 200);
+        }
+
+        function handleAnswer(isCorrect) {
+            if (isCorrect) {
+                score++;
+                nextLevel();
+            } else {
+                hp--;
+                updateStats();
+                triggerDamage();
+                
+                if (hp <= 0) {
+                    die();
+                } else {
+                    nextLevel();
+                }
+            }
+        }
+
+        function nextLevel() {
+            currentIndex++;
+            if (currentIndex < gameQuestions.length) {
+                showQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('score').innerText = score * 100; // 假装是修为年限
+            document.getElementById('hp-text').innerText = hp;
+            const hpBar = document.getElementById('health-bar');
+            hpBar.style.width = (hp / maxHp * 100) + '%';
+            
+            if (hp <= 2) hpBar.style.background = '#ff3333';
+        }
+
+        function triggerDamage() {
+            const container = document.querySelector('.container');
+            container.classList.add('shake');
+            document.body.style.backgroundColor = '#500';
+            setTimeout(() => {
+                container.classList.remove('shake');
+                document.body.style.backgroundColor = ''; 
+            }, 300);
+        }
+
+        function die() {
+            const overlay = document.getElementById('lightning-overlay');
+            overlay.classList.add('flash');
+            setTimeout(() => {
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('fail-screen').classList.remove('hidden');
+                document.getElementById('death-level').innerText = currentIndex + 1;
+                overlay.classList.remove('flash');
+            }, 500);
+        }
+
+        function finishGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('hidden');
+            
+            const rankEl = document.getElementById('final-rank');
+            const commentEl = document.getElementById('final-comment');
+            
+            // 评分逻辑
+            let rank = "";
+            let comment = "";
+            
+            if (score <= 3) {
+                rank = "外门弟子";
+                comment = "你这智商，连山门都进不去... <br>(修为太低)";
+            } else if (score <= 5) {
+                rank = "内门弟子";
+                comment = "虽然活下来了，但也只是个普通的修仙者。<br>(勉强及格)";
+            } else if (score <= 7) {
+                rank = "宗门长老";
+                comment = "你的智慧已超越凡人，足以开坛讲道！";
+            } else if (score <= 9) {
+                rank = "渡劫老祖";
+                comment = "恐怖如斯！此界已无人是你对手！";
+            } else {
+                rank = "九天仙帝";
+                comment = "全对？！我看你不是人，是神！<br>受小弟一拜！";
+            }
+            
+            rankEl.innerText = rank;
+            commentEl.innerHTML = comment;
+        }
+    </script>
+</body>
+</html>
